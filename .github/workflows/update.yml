@@ -3,7 +3,7 @@ on: pull_request
 
 jobs:
   update:
-    name: EAS Update
+    name: EAS Update Clube de Férias
     runs-on: ubuntu-latest
     steps:
       - name: Check for EXPO_TOKEN_TEST
