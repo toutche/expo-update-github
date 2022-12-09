@@ -33,3 +33,27 @@ jobs:
 
       - name: Publish update
         run: eas update --branch preview --auto
+
+      - name: Publish preview
+        id: update
+        run: |
+          eas update --branch preview --message 'Update with commit ${{ github.sha }}' --json | jq '.[].id' -r > updates.txt
+          ANDROID_URL="$(sed -n 1p updates.txt)"
+          IOS_URL="$(sed -n 2p updates.txt)"
+          echo "::set-output name=androidUrl::$ANDROID_URL"
+          echo "::set-output name=iosUrl::$IOS_URL"
+
+      - name: Comment preview in pull request
+        uses: expo/expo-github-action/preview-comment@7.2.0
+        with:
+          message: |
+            <h2>App</h2>
+            <h3>Channel: preview</h3>
+            <h4>Preview with Android</h4>
+            <a href="exp://u.expo.dev/update/${{ steps.update.outputs.androidUrl }}">
+              <img src="https://qr.expo.dev/eas-update?updateId=${{ steps.update.outputs.androidUrl }}&appScheme=exp" height="200px" width="200px">
+            </a>
+            <h4>Preview with iOS</h4>
+            <a href="exp://u.expo.dev/update/${{ steps.update.outputs.iosUrl }}">
+              <img src="https://qr.expo.dev/eas-update?updateId=${{ steps.update.outputs.iosUrl }}&appScheme=exp" height="200px" width="200px">
+            </a>
