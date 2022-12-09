@@ -37,7 +37,7 @@ jobs:
       - name: Publish preview
         id: update
         run: |
-          eas update --branch preview --message 'Update with commit ${{ github.sha }}' --json | jq '.[].id' -r > updates.txt
+          eas update --branch preview --message 'Update with commit ${{ github.sha }}' --json --non-interactive | jq '.[].id' -r > updates.txt
           ANDROID_URL="$(sed -n 1p updates.txt)"
           IOS_URL="$(sed -n 2p updates.txt)"
           echo "::set-output name=androidUrl::$ANDROID_URL"
