@@ -6,10 +6,10 @@ jobs:
     name: EAS Update Clube de Férias
     runs-on: ubuntu-latest
     steps:
-      - name: Check for EXPO_TOKEN_TEST
+      - name: Check for EXPO_TOKEN
         run: |
-          if [ -z "${{ secrets.EXPO_TOKEN_TEST }}" ]; then
-            echo "You must provide an EXPO_TOKEN_TEST secret linked to this project's Expo account in this repo's secrets. Learn more: https://docs.expo.dev/eas-update/github-actions"
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "You must provide an EXPO_TOKEN secret linked to this project's Expo account in this repo's secrets. Learn more: https://docs.expo.dev/eas-update/github-actions"
             exit 1
           fi
 
@@ -26,10 +26,35 @@ jobs:
         with:
           expo-version: 6.x
           eas-version: 3.x
-          token: ${{ secrets.EXPO_TOKEN_TEST }}
+          token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
         run: npm install
 
       - name: Publish update
         run: eas update --branch preview --auto
+
+      - name: Publish preview
+        id: update
+        run: |
+          eas update --branch preview --message 'Update with commit ${{ github.sha }}' --json --non-interactive | jq '.[].id' -r > updates.txt
+          ANDROID_URL="$(sed -n 1p updates.txt)"
+          IOS_URL="$(sed -n 2p updates.txt)"
+          echo "::set-output name=androidUrl::$ANDROID_URL"
+          echo "::set-output name=iosUrl::$IOS_URL"
+
+      - name: Comment preview in pull request
+        uses: expo/expo-github-action/preview-comment@7.2.0
+        with:
+          message: |
+            <h2>App</h2>
+            <h3>Channel: preview</h3>
+            <h4>Preview with iOS</h4>
+            <a href="exp://u.expo.dev/update/${{ steps.update.outputs.iosUrl }}">
+              <img src="https://qr.expo.dev/eas-update?updateId=${{ steps.update.outputs.iosUrl }}&appScheme=exp" height="200px" width="200px">
+            </a>
+            <h4>Preview with Android</h4>
+            <a href="exp://u.expo.dev/update/${{ steps.update.outputs.androidUrl }}">
+              <img src="https://qr.expo.dev/eas-update?updateId=${{ steps.update.outputs.androidUrl }}&appScheme=exp" height="200px" width="200px">
+            </a>
+            
