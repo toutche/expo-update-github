@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>Atualização Clube de Férias!</Text>
+      <Text>Hello World QRCode Expo!</Text>
       <StatusBar style="auto" />
     </View>
   );
